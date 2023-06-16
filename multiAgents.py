@@ -14,7 +14,7 @@
 
 from util import manhattanDistance
 from game import Directions
-import random, util
+import random, util, math
 
 from game import Agent
 from pacman import GameState
@@ -70,12 +70,51 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
-        newFood = successorGameState.getFood()
+        newFood = successorGameState.getFood().asList()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        newGhostPos = successorGameState.getGhostPositions()
+        oldSuperFood = currentGameState.getCapsules()
+        newSuperFood = successorGameState.getCapsules()
+        # IDEA:
+        # Try eating food and running away from ghosts (i.e., keep a certain distance)
+        # Add a weighted term to the nearest food and also add a (lower weight) to closest power pellet
 
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        foodDistances = [manhattanDistance(newPos, foodPos) for foodPos in newFood]
+        superFoodDistances = [manhattanDistance(newPos, superPos) for superPos in newSuperFood]
+        # No food left after this move --> winning move
+        if len(foodDistances) == 0:
+            return math.inf
+
+        # weighted reciprocal for minimum distance to food
+        # this prefers moves that step closer to an eaten food
+        evaluation = 10 / min(foodDistances)
+        
+        # if this move would eat a super pellet, eat it
+        if len(oldSuperFood) > len(newSuperFood):
+            return math.inf
+        # if there is super food left, add a weighted reciprocal to the closest super pellet
+        # this is weighted less than the food distance to prefer food over super pellets
+        if len(superFoodDistances) > 0:
+            evaluation += 5 / min(superFoodDistances)
+        
+        for index, ghostPos in enumerate(newGhostPos):
+            # just ignore ghosts, if we ate a super pellet
+            # NOTE: This can be optimized to go towards ghost, if scared timer > distance
+            if newScaredTimes[index] > 0:
+                continue
+            # reduce score, if we move toward a non-scared ghost
+            elif manhattanDistance(newPos, ghostPos) < 5:
+                evaluation *= .5
+            # what distance should pacman always try to keep
+            # we settled on 2 after testing all values between 1 and 5
+            # less than 2 is too risky (the ghosts can easily capture pacman)
+            # more than 2 is too scared (pacman hides instead of eating food)
+            # It may make sense to set this value based on the size of the grid
+            elif manhattanDistance(newPos, ghostPos) < 2:
+                evaluation = -math.inf
+
+        return successorGameState.getScore() + evaluation
 
 def scoreEvaluationFunction(currentGameState: GameState):
     """
