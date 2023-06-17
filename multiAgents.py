@@ -304,9 +304,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
             agent (int): defines whos turn it is (pacman is agent 0)
 
-            alpha (int): current maximum found
+            alpha (int): current best for MAX
 
-            beta (int): current minimum found
+            beta (int): current best for MIN
 
             return_action (bool): whether or not we return action or utility
         Returns:
@@ -337,6 +337,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             depth (int): keeps track of current recursion depth
 
             agent (int): defines whos turn it is (pacman is agent 0)
+
+            alpha (int): current best for MAX
+
+            beta (int): current best for MIN
         Returns:
             v: The utility score of our best action
             best_action: The best action maximizing our utility
@@ -372,6 +376,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             depth (int): keeps track of current recursion depth
 
             agent (int): defines whos turn it is (pacman is agent 0)
+
+            alpha (int): current best for MAX
+
+            beta (int): current best for MIN
         Returns:
             v: The utility score of our best action
             best_action: The best action minimizing our utility
