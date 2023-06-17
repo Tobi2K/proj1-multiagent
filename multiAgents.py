@@ -149,6 +149,9 @@ class MultiAgentSearchAgent(Agent):
 class MinimaxAgent(MultiAgentSearchAgent):
     """
     Your minimax agent (question 2)
+
+    NOTE: We follow the algorithm given in the lecture with the addition of agent checking.
+    We loop through all ghosts and once we reach the last ghost (i.e., agent gameState.getNumAgents() - 1) we loop back to pacman and descend one level.
     """
 
     def getAction(self, gameState: GameState):
@@ -174,13 +177,12 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
         return self.value(gameState, 0, 0, return_action=True)
 
     # NAMING OF METHODS AS IN THE LECTURE
     def value(self, gameState: GameState, depth, agent, return_action=False):
         """
-        Function to asses what a states value is.
+        Function to asses what a states value is using minimax.
         Returns the utility if we reached our desired depth or if the current state is winning or losing.
         Args:
             gameState (GameState): The current game state.
@@ -276,14 +278,131 @@ class MinimaxAgent(MultiAgentSearchAgent):
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
+
+    NOTE: We follow the algorithm given in the lecture with the addition of agent checking.
+    We loop through all ghosts and once we reach the last ghost (i.e., agent gameState.getNumAgents() - 1) we loop back to pacman and descend one level.
+    NOTE: This is a pretty much exact copy of minimax.
+    We add alpha and beta values and only need to check if our new utility is larger/smaller than beta/alpha
+    This change can be found in max_value and min_value
     """
 
     def getAction(self, gameState: GameState):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.value(gameState, 0, 0, -math.inf, math.inf, return_action=True)
+
+     # NAMING OF METHODS AS IN THE LECTURE
+    def value(self, gameState: GameState, depth, agent, alpha, beta, return_action=False):
+        """
+        Function to asses what a states value is using alpha-beta-pruning.
+        Returns the utility if we reached our desired depth or if the current state is winning or losing.
+        Args:
+            gameState (GameState): The current game state.
+
+            depth (int): keeps track of current recursion depth
+
+            agent (int): defines whos turn it is (pacman is agent 0)
+
+            alpha (int): current maximum found
+
+            beta (int): current minimum found
+
+            return_action (bool): whether or not we return action or utility
+        Returns:
+            utility: The utility of our state. Returned if return_action is False
+            action: The action that improves our objective most. Returned if return_action is True
+        """
+        # reached max depth
+        if depth == self.depth:
+            return self.evaluationFunction(gameState)
+
+        # current state is winning or losing
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        if agent == 0:  # pacman's turn ==> maximize
+            # max_value returns a tuple of (value, action), we only want the value for recursion
+            return  self.max_value(gameState, depth, agent, alpha, beta)[0] if not return_action else self.max_value(gameState, depth, agent, alpha, beta)[1]
+        else: # a ghosts turn ==> minimize
+            # min_value returns a tuple of (value, action), we only want the value for recursion
+            return self.min_value(gameState, depth, agent, alpha, beta)[0] if not return_action else self.min_value(gameState, depth, agent, alpha, beta)[1]
+
+    def max_value(self, gameState: GameState, depth, agent, alpha, beta):
+        """
+        Function to get the best action for a MAX player.
+        Args:
+            gameState (GameState): The current game state.
+
+            depth (int): keeps track of current recursion depth
+
+            agent (int): defines whos turn it is (pacman is agent 0)
+        Returns:
+            v: The utility score of our best action
+            best_action: The best action maximizing our utility
+        """
+        v = -math.inf
+        best_action = None
+        successors = gameState.getLegalActions(agent)
+        
+        for succ in successors:
+            # get evaluation of state for other agents
+            state_eval = self.value(gameState.generateSuccessor(agent, succ), depth, agent + 1, alpha, beta)
+            
+            # if our new eval is higher than current best, we replace it and save the corresponding action
+            if state_eval > v:
+                v = state_eval
+                best_action = succ
+
+            # if our currently utility is greater than beta, we can prune
+            if v > beta:
+                return v, best_action
+            
+            # update alpha
+            alpha = max(alpha, v)
+        
+        return v, best_action
+
+    def min_value(self, gameState: GameState, depth, agent, alpha, beta):
+        """
+        Function to get the best action for a MIN player.
+        Args:
+            gameState (GameState): The current game state.
+
+            depth (int): keeps track of current recursion depth
+
+            agent (int): defines whos turn it is (pacman is agent 0)
+        Returns:
+            v: The utility score of our best action
+            best_action: The best action minimizing our utility
+        """
+        v = math.inf
+        best_action = None
+        successors = gameState.getLegalActions(agent)
+        
+        for succ in successors:
+            if agent == gameState.getNumAgents() - 1:
+                # this is the last ghost
+                # we need to restart the loop of agents (start with 0 again) and go one level deeper
+                # agent index hast to be -1, because it will be incremented in the next call ==> will be 0
+                agent = -1 
+                depth += 1
+            # get evaluation of state for other agents
+            state_eval = self.value(gameState.generateSuccessor(agent, succ), depth, agent + 1, alpha, beta)
+
+            # if our new eval is lower than current best, we replace it and save the corresponding action
+            if state_eval < v:
+                v = state_eval
+                best_action = succ
+
+            # if our currently utility is less than alpha, we can prune
+            if v < alpha:
+                return v, best_action
+            
+            # update beta
+            beta = min(beta, v)
+        
+        return v, best_action
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
