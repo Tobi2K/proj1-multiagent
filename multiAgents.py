@@ -525,8 +525,6 @@ def betterEvaluationFunction(currentGameState: GameState):
     #print("Distance to the next ghost: {}".format(distance_to_closest_ghost))
 
 
-
-    #closestDistance is not working right now
     
     score = 1    * current_score + \
             -10  * number_of_capsules_left + \
