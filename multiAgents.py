@@ -424,8 +424,75 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         All ghosts should be modeled as choosing uniformly at random from their
         legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.value(gameState=gameState,depth=0,agent=0,return_action=True)
+        
+    def value(self, gameState: GameState, depth,agent, return_action=False):
+        '''
+        Fuction to asses what a states value is using expectimax
+        Returns the utility if we reached our desired depth or if the current state is winning or losing
+        Args:
+        
+        Returns:
+            utility: The utility of our state. Returned if return_action is False
+            action: The action that improves our objective most. Returned if return_action is True
+        '''  
+         
+        #reaches max depth 
+        if depth == self.depth:
+            return self.evaluationFunction(gameState)
+        # current state is winning or losing        
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+        
+        if agent == 0: # pacman's turn ==> maximize
+            return self.max_val(gameState,depth,agent)[0] if not return_action else self.max_val(gameState,depth,agent)[1]
+        else: # a ghosts turn ==> expectimax
+            return self.exp_val(gameState,depth,agent)[0] if not return_action else self.exp_val(gameState,depth,agent)[1]
+    
+    def max_val(self, gameState:GameState, depth, agent):
+        """
+        Function to get the best action for a MAX player
+        Args:
+            gameState (GameState): The current game state
+            depth (int): keeps track of the current recursion depth
+            agent (int): defines whos turn it is (pacman is agent 0)
+        Return:
+            v: The utility score of the best action
+            best_action: The best action maximizing the utility score             
+        """
+        
+        v = -math.inf
+        best_action = None
+        successors = gameState.getLegalActions(agentIndex=agent)
+                
+        for succ in successors:
+            #get evaluation of the state for other agents (after pacman moved to the current successor) 
+            state_eval = self.value(gameState=gameState.generateSuccessor(agentIndex=agent,action=succ), depth=depth,agent=agent+1)  
+
+            #if our new eval is higher than the current best, we replace it and save the corresponding action 
+            if state_eval > v:
+                v = state_eval
+                best_action = succ
+        
+        return v, best_action
+    
+    def exp_val(self,gameState:GameState, depth, agent):
+        v = 0
+        successors = gameState.getLegalActions(agentIndex=agent)
+        p = 1/len(successors)
+        
+        for succ in successors:
+            if agent == gameState.getNumAgents()-1:
+                #this is the last ghost
+                #we need to restart the loop of agents (starting with pacman (0) again) and go one depth deeper
+                # agent index has to be -1, because it will be incremented in the next call ==> will be 0
+                agent = -1
+                depth += 1
+            v += p * self.value(gameState=gameState.generateSuccessor(agentIndex=agent,action=succ),depth=depth,agent=agent+1)
+
+        #cant determine best action, because its an expectimax
+        return v, None
+    
 
 def betterEvaluationFunction(currentGameState: GameState):
     """
