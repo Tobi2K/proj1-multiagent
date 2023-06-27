@@ -516,8 +516,8 @@ def betterEvaluationFunction(currentGameState: GameState):
     current_score = scoreEvaluationFunction(currentGameState)
 
     pacman_position = currentGameState.getPacmanPosition()
-    # distances_to_food = [manhattanDistance(pacman_position, x) for x in currentGameState.getFood().asList()]
-    # distance_to_closest_food = min(distances_to_food)
+    distances_to_food = [manhattanDistance(pacman_position, x) for x in currentGameState.getFood().asList()]
+    distance_to_closest_food = min(distances_to_food)
     # print("Distance to the next food: {}".format(distance_to_closest_food))
 
     distances_to_ghosts = [manhattanDistance(pacman_position, x) for x in currentGameState.getGhostPositions()]
@@ -531,8 +531,8 @@ def betterEvaluationFunction(currentGameState: GameState):
     score = 1    * current_score + \
             -10  * number_of_capsules_left + \
             -1   * number_of_food_left + \
-            -2   * (1/distance_to_closest_ghost)
-            #-1.5   * distance_to_closest_food + \
+            -2   * (1/distance_to_closest_ghost) + \
+            -1   * distance_to_closest_food 
 
     return score
 
