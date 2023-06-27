@@ -19,6 +19,7 @@ import random, util, math
 from game import Agent
 from pacman import GameState
 
+
 class ReflexAgent(Agent):
     """
     A reflex agent chooses an action at each choice point by examining
@@ -502,7 +503,38 @@ def betterEvaluationFunction(currentGameState: GameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    if currentGameState.isLose():
+        return -math.inf
+    if currentGameState.isWin():
+        return math.inf
+    
+    number_of_food_left = currentGameState.getNumFood()
+    
+    number_of_capsules_left = len(currentGameState.getCapsules())
+    
+    current_score = scoreEvaluationFunction(currentGameState)
+
+    pacman_position = currentGameState.getPacmanPosition()
+    # distances_to_food = [manhattanDistance(pacman_position, x) for x in currentGameState.getFood().asList()]
+    # distance_to_closest_food = min(distances_to_food)
+    # print("Distance to the next food: {}".format(distance_to_closest_food))
+
+    distances_to_ghosts = [manhattanDistance(pacman_position, x) for x in currentGameState.getGhostPositions()]
+    distance_to_closest_ghost = min(distances_to_ghosts)
+    #print("Distance to the next ghost: {}".format(distance_to_closest_ghost))
+
+
+
+    #closestDistance is not working right now
+    
+    score = 1    * current_score + \
+            -10  * number_of_capsules_left + \
+            -1   * number_of_food_left + \
+            -2   * (1/distance_to_closest_ghost)
+            #-1.5   * distance_to_closest_food + \
+
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
