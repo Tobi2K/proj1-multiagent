@@ -532,10 +532,11 @@ def betterEvaluationFunction(currentGameState: GameState):
     I have developed 2 different strategies 
     1.ghost chasing 
     2.not ghost chasing
+    
+    improvements:
+        => if the ghost is inbetween pacman and the food, the pacman doesnt come closer but waits for the ghost to leave and then approaches the coins -> approach anyways
+        => the pacman leaves lonely coins -> the pacman should  collect lonely coins because it takes longer to collect them later on (maybe implement search alg from proj1)
     """
-    #   ghost_chasing = {"score_weight": 1, "capsules_weight": -20,"food_left_weight": -3, "food_distance_weight": -1, "pacman_action_weight": 1, "ghost_distance_weight": -2.5,"ghost_scared_weight":0}
-    #   normal = {"score_weight": 1, "capsules_weight": -20,"food_left_weight": -3, "food_distance_weight": 5, "pacman_action_weight": -1, "ghost_distance_weight": -6,"ghost_scared_weight":2}
-
     modes = {"GHOSTCHASING": "ghostchasing", "NORMAL": "normal"}
     mode = modes["NORMAL"]
     
@@ -573,7 +574,7 @@ def betterEvaluationFunction(currentGameState: GameState):
     distance_to_closest_ghost = min(distances_to_ghosts)
     
     
-        #The weights of the parameters were adjusted by hand
+    #The weights of the parameters were adjusted by hand
     if mode == modes["GHOSTCHASING"]:
         score = 1    * current_score + \
                 -20  * number_of_capsules_left + \
@@ -584,10 +585,10 @@ def betterEvaluationFunction(currentGameState: GameState):
     elif mode == modes["NORMAL"]:
         score = 1    * current_score + \
                 -15  * number_of_capsules_left + \
-                4    * (1/math.sqrt(distance_to_closest_food)) + \
+                4    * (distance_to_closest_food**(-.4))+\
                 -1.25* (1/(amount_pacman_action)) + \
                 (1 if ghost_is_scared else -10) * (1/distance_to_closest_ghost)
-    #prefer isolated
+        
     return score
 
 # Abbreviation
