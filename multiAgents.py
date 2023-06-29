@@ -228,7 +228,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         v = -math.inf
         best_action = Directions.STOP
         successors = gameState.getLegalActions(agent)
-        
+        random.shuffle(successors)
+
         for succ in successors:
             # get evaluation of state for other agents
             state_eval = self.value(gameState.generateSuccessor(agent, succ), depth, agent + 1)
@@ -256,7 +257,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         v = math.inf
         best_action = Directions.STOP
         successors = gameState.getLegalActions(agent)
-        
+        random.shuffle(successors)
+
         for succ in successors:
             if agent == gameState.getNumAgents() - 1:
                 # this is the last ghost
@@ -466,6 +468,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         best_action = Directions.STOP
         successors = gameState.getLegalActions(agentIndex=agent)
         random.shuffle(successors)
+        
         for succ in successors:
             #get evaluation of the state for other agents (after pacman moved to the current successor) 
             state_eval = self.value(gameState=gameState.generateSuccessor(agentIndex=agent,action=succ), depth=depth,agent=agent+1)  
@@ -481,7 +484,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         v = 0
         successors = gameState.getLegalActions(agentIndex=agent)
         p = 1/len(successors)
-        
+        random.shuffle(successors)
+
         for succ in successors:
             if agent == gameState.getNumAgents()-1:
                 #this is the last ghost
@@ -551,8 +555,6 @@ def betterEvaluationFunction(currentGameState: GameState):
         ghost_is_scared = True if ghost_state.scaredTimer > 0 else False
         break
         
-        
-    
     # getting the manhatten distance to the closest food for the evaluation
     pacman_position = currentGameState.getPacmanPosition()
     distances_to_food = [manhattanDistance(pacman_position, x) for x in currentGameState.getFood().asList()]
