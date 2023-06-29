@@ -522,12 +522,20 @@ def betterEvaluationFunction(currentGameState: GameState):
             Thats why I also chose to let the distance to the next food have an impact on the evaluation. I prefered the manhatten distance over the 
             search from proj1 because it was move accessible (already imported into the project).
         => Distance to Ghosts: I chose that the distance to the closest ghost needs to have an impact on the evaluation, but the weight in my eval is very low.
-            You can see that the pacman is almost chasing the ghost to get to the foods left.
+            You can see that the pacman is chasing the ghost because he gets a higher eval if the distance is close. 
         => Legal Moves: To avoid getting trapped in some chokepoint where you have to do some additional steps to escape the ghost, the pacman
             prefers squares that have many legal moves. 
         => Scared Ghosts: If the ghosts are scared the pacman can ignore the distance to the ghosts, because they cant hurt him. Chasing the ghosts resulted
             in a generally lower score with my current setup so the pacman will just focus on eating the food. If a scared ghost runs into his path he will
             not hesitate to eat it, because his general score will be higher.
+    
+    P.S. I have tried other strategies than the "ghost-hunting" but with the eval ghosts this has worked the best so far
+        score = 1    * current_score + \
+            -20  * number_of_capsules_left + \
+            -3   * number_of_food_left + \
+            -1   * distance_to_closest_food + \
+            1    * amount_pacman_action + \
+            (-1 if ghost_is_scared else 1) * distance_to_closest_ghost 
     """
     "*** YOUR CODE HERE ***"
     
