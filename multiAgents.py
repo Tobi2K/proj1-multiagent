@@ -527,10 +527,10 @@ def betterEvaluationFunction(currentGameState: GameState):
 
     
     score = 1    * current_score + \
-            -10  * number_of_capsules_left + \
-            -1   * number_of_food_left + \
-            -2   * (1/distance_to_closest_ghost) + \
-            -1   * distance_to_closest_food 
+            -20  * number_of_capsules_left + \
+            -3   * number_of_food_left + \
+            -2.5  * (1/distance_to_closest_ghost) + \
+            -1.5 * distance_to_closest_food 
 
     return score
 
