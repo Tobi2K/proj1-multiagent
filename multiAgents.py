@@ -463,9 +463,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         
         v = -math.inf
-        best_action = None
+        best_action = Directions.STOP
         successors = gameState.getLegalActions(agentIndex=agent)
-                
+        random.shuffle(successors)
         for succ in successors:
             #get evaluation of the state for other agents (after pacman moved to the current successor) 
             state_eval = self.value(gameState=gameState.generateSuccessor(agentIndex=agent,action=succ), depth=depth,agent=agent+1)  
