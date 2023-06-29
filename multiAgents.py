@@ -226,7 +226,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             best_action: The best action maximizing our utility
         """
         v = -math.inf
-        best_action = None
+        best_action = Directions.STOP
         successors = gameState.getLegalActions(agent)
         
         for succ in successors:
@@ -254,7 +254,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             best_action: The best action minimizing our utility
         """
         v = math.inf
-        best_action = None
+        best_action = Directions.STOP
         successors = gameState.getLegalActions(agent)
         
         for succ in successors:
@@ -347,7 +347,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             best_action: The best action maximizing our utility
         """
         v = -math.inf
-        best_action = None
+        best_action = Directions.STOP
         successors = gameState.getLegalActions(agent)
         
         for succ in successors:
@@ -386,7 +386,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             best_action: The best action minimizing our utility
         """
         v = math.inf
-        best_action = None
+        best_action = Directions.STOP
         successors = gameState.getLegalActions(agent)
         
         for succ in successors:
@@ -500,37 +500,75 @@ def betterEvaluationFunction(currentGameState: GameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: My evaluation function calculates a linear combination of the following:
+        => The score of the current game
+        => The number of food left on the map
+        => The number of capsules left on the map
+        => The number of legal moves for the pacman
+        => The manhatten distance to the closest food
+        => The manhatten distance to the closest ghost
+        => The ghost state
+        
+    The weights are adjusted by hand but following "common sense" (and 20 minutes of try and error).
+        => Score: I didnt temper with the weight for the score of the position because its a good baseline for the evaluation. 
+        => Food: To prefer states with less food the amount of food on the map get subtracted from the score.
+            -> Less food eaten results in a lower evaluation (same applies for capsules)
+        => Capsules: Because the amount of capsules is very low they needed to be highly weighted to have an effect on the pacmans behaviour.
+        => Distance to Food: Because we operate at a shallow depth the food is often out of reach for the "amount of food" to have an impact on the evaluation.
+            Thats why I also chose to let the distance to the next food have an impact on the evaluation. I prefered the manhatten distance over the 
+            search from proj1 because it was move accessible (already imported into the project).
+        => Distance to Ghosts: I chose that the distance to the closest ghost needs to have an impact on the evaluation, but the weight in my eval is very low.
+            You can see that the pacman is almost chasing the ghost to get to the foods left.
+        => Legal Moves: To avoid getting trapped in some chokepoint where you have to do some additional steps to escape the ghost, the pacman
+            prefers squares that have many legal moves. 
+        => Scared Ghosts: If the ghosts are scared the pacman can ignore the distance to the ghosts, because they cant hurt him. Chasing the ghosts resulted
+            in a generally lower score with my current setup so the pacman will just focus on eating the food. If a scared ghost runs into his path he will
+            not hesitate to eat it, because his general score will be higher.
     """
     "*** YOUR CODE HERE ***"
     
+    # if the game is lost of won, the position can be evaluated as +/- infinity because if cant get better/worse
     if currentGameState.isLose():
         return -math.inf
     if currentGameState.isWin():
         return math.inf
     
+    
+    # getting the current score of the game for the evaluation  
+    current_score = scoreEvaluationFunction(currentGameState)
+    
+    # getting the number of food left for the evaluation
     number_of_food_left = currentGameState.getNumFood()
     
+    # getting the number of capsures left as part of the evaluation 
     number_of_capsules_left = len(currentGameState.getCapsules())
-    
-    current_score = scoreEvaluationFunction(currentGameState)
 
+    # getting the amount of legal pacman actions in the given state for the evaluation
+    amount_pacman_action = len(currentGameState.getLegalPacmanActions())
+    
+    # if one ghost is scared all ghosts are scared right?!
+    for ghost_state in currentGameState.getGhostStates():
+        ghost_is_scared = True if ghost_state.scaredTimer > 0 else False
+        break
+        
+        
+    
+    # getting the manhatten distance to the closest food for the evaluation
     pacman_position = currentGameState.getPacmanPosition()
     distances_to_food = [manhattanDistance(pacman_position, x) for x in currentGameState.getFood().asList()]
     distance_to_closest_food = min(distances_to_food)
-    # print("Distance to the next food: {}".format(distance_to_closest_food))
 
+    # getting the manhatten distance to the closest ghost for the evaluation
     distances_to_ghosts = [manhattanDistance(pacman_position, x) for x in currentGameState.getGhostPositions()]
     distance_to_closest_ghost = min(distances_to_ghosts)
-    #print("Distance to the next ghost: {}".format(distance_to_closest_ghost))
-
-
     
+    #The weights of the parameters were adjusted by hand
     score = 1    * current_score + \
             -20  * number_of_capsules_left + \
             -3   * number_of_food_left + \
-            -2.5  * (1/distance_to_closest_ghost) + \
-            -1.5 * distance_to_closest_food 
+            -1   * distance_to_closest_food + \
+            1    * amount_pacman_action + \
+            (0 if ghost_is_scared else -2.5) * distance_to_closest_ghost 
 
     return score
 
