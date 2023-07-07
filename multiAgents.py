@@ -104,7 +104,7 @@ class ReflexAgent(Agent):
             # NOTE: This can be optimized to go towards ghost, if scared timer > distance
             if newScaredTimes[index] > 0:
                 continue
-            # reduce score, if we move toward a non-scared ghost
+            # reduce score, if we are in the vicinity to a non-scared ghost
             elif manhattanDistance(newPos, ghostPos) < 5:
                 evaluation *= .5
             # what distance should pacman always try to keep
