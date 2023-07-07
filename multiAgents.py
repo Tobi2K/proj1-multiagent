@@ -465,8 +465,12 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         
         v = -math.inf
+        # assign default action, otherwise agent can evaluate action as None in some edge cases
         best_action = Directions.STOP
         successors = gameState.getLegalActions(agentIndex=agent)
+        # we shuffle the next actions so that STOP is not at the first position
+        # if STOP is always first it will be preferred over other actions with the same evaluation
+        # this can prevent pacman from moving until a ghost is near him
         random.shuffle(successors)
         
         for succ in successors:
@@ -484,6 +488,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         v = 0
         successors = gameState.getLegalActions(agentIndex=agent)
         p = 1/len(successors)
+        # we shuffle the next actions so that STOP is not at the first position
+        # if STOP is always first it will be preferred over other actions with the same evaluation
+        # this can prevent pacman from moving until a ghost is near him
         random.shuffle(successors)
 
         for succ in successors:
