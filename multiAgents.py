@@ -513,39 +513,33 @@ def betterEvaluationFunction(currentGameState: GameState):
 
     DESCRIPTION: My evaluation function calculates a linear combination of the following:
         => The score of the current game
-        => The number of food left on the map
         => The number of capsules left on the map
-        => The number of legal moves for the pacman
         => The manhatten distance to the closest food
+        => The number of legal moves for the pacman
         => The manhatten distance to the closest ghost
         => The ghost state
         
     The weights are adjusted by hand but following "common sense" (and 20 minutes of try and error).
         => Score: I didnt temper with the weight for the score of the position because its a good baseline for the evaluation. 
-        => Food: To prefer states with less food the amount of food on the map get subtracted from the score.
-            -> Less food eaten results in a lower evaluation (same applies for capsules)
         => Capsules: Because the amount of capsules is very low they needed to be highly weighted to have an effect on the pacmans behaviour.
-        => Distance to Food: Because we operate at a shallow depth the food is often out of reach for the "amount of food" to have an impact on the evaluation.
+        => Distance to Food: Because we operate at a shallow depth the food is often out of reach for the score to reflect on the evaluation.
             Thats why I also chose to let the distance to the next food have an impact on the evaluation. I prefered the manhatten distance over the 
-            search from proj1 because it was move accessible (already imported into the project).
-        => Distance to Ghosts: I chose that the distance to the closest ghost needs to have an impact on the evaluation, but the weight in my eval is very low.
-            You can see that the pacman is chasing the ghost (behaviour changes with strategy!).
+            search from proj1 because it faster and move accessible (already imported into the project).
+        => Distance to Ghosts: I chose that the distance to the closest ghost needs to have an impact on the evaluation, but the weight in my eval is very low (riskier pacman).
         => Legal Moves: To avoid getting trapped in some chokepoint where you have to do some additional steps to escape the ghost, the pacman
             prefers squares that have many legal moves. 
         => Scared Ghosts: If the ghosts are scared the pacman can ignore the distance to the ghosts, because they cant hurt him. Chasing the ghosts resulted
             in a generally lower score with my current setup so the pacman will just focus on eating the food. If a scared ghost runs into his path he will
             not hesitate to eat it, because his general score will be higher.
-    
-    I have developed 2 different strategies 
-    1.ghost chasing 
-    2.not ghost chasing
+        
+        => Food: Because states with less food have a higher score and are therefore prefered anyways, the number of food is indirectly reflected in the score
     
     improvements:
         => if the ghost is inbetween pacman and the food, the pacman doesnt come closer but waits for the ghost to leave and then approaches the coins -> approach anyways
         => the pacman leaves lonely coins -> the pacman should  collect lonely coins because it takes longer to collect them later on (maybe implement search alg from proj1)
+            or a coin cluster finder of some sort.
     """
-    modes = {"GHOSTCHASING": "ghostchasing", "NORMAL": "normal"}
-    mode = modes["NORMAL"]
+
     
     # if the game is lost of won, the position can be evaluated as +/- infinity because if cant get better/worse
     if currentGameState.isLose():
@@ -582,19 +576,11 @@ def betterEvaluationFunction(currentGameState: GameState):
     
     
     #The weights of the parameters were adjusted by hand
-    if mode == modes["GHOSTCHASING"]:
-        score = 1    * current_score + \
-                -20  * number_of_capsules_left + \
-                -3   * number_of_food_left + \
-                -1   * distance_to_closest_food + \
-                1    * amount_pacman_action + \
-                (0 if ghost_is_scared else -2.5) * distance_to_closest_ghost 
-    elif mode == modes["NORMAL"]:
-        score = 1    * current_score + \
-                -15  * number_of_capsules_left + \
-                4    * (distance_to_closest_food**(-.4))+\
-                -1.25* (1/(amount_pacman_action)) + \
-                (1 if ghost_is_scared else -10) * (1/distance_to_closest_ghost)
+    score = 1    * current_score + \
+            -15  * number_of_capsules_left + \
+            4    * (distance_to_closest_food**(-.4))+\
+            -1.25* (1/(amount_pacman_action)) + \
+            (1 if ghost_is_scared else -10) * (1/distance_to_closest_ghost)
         
     return score
 
